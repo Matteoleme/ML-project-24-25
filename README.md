@@ -236,7 +236,7 @@ Additional experiments were ran by adjusting batch and memory size. With 750 epi
 ![750 improved](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/750_improved.png)
 ###### Tuning Neural Network nodes
 Increasing the number of hidden units in the network from 32 to 64 did not lead to noticeable improvements.
-![Immagini](64_nodes)
+![More NN nodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/1500_64nodes.png)
 ###### Final run
 From these experiments, it became clear that:
  - Discount factor set to 0.99 it's a good value for this number of steps of the envirnoment
