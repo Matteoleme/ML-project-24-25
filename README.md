@@ -211,9 +211,9 @@ Then to improve the performance, I tried different runs by increasing the number
  - Ep: 500000, LR: 0.1, Reward: -70
  - Ep: 500000, LR: 0.001, Reward: -63
 
-![2000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\2000.png)
-![25000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\25000.png)
-![500000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\500000.png)
+![2000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/2000.png)
+![25000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/25000.png)
+![500000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/500000.png)
 #### Deep Q-Network (DQN)
 ##### Some important considerations
 At the beginning of this type of tests I noticed something strange in the results. Then I tried to reason deeply about the parameters, and which of them could be modified to further improve the results. I did one important observation on how I defined the success rate in my setup. It must be interpreted carefully, because when the agent falls into a cliff, the episode doesn't count as a failure, but the agent respawns at the initial position. An episode is considered unsuccessful, only if the agent fails to reach the goal using less steps than the max step value.
