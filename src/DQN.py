@@ -218,7 +218,7 @@ class CliffWalkingDQL():
         for i in range(episodes):
             state, _ = env.reset()  
             terminated = False
-            truncated = True
+            truncated = False
             reward_per_episode = 0
 
             while(not terminated and not truncated):  
