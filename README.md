@@ -53,7 +53,7 @@ Steps:
 	 - execute *a*
 	 - observe the new state *s'* and reward *r* after the execution
 	 - update the table entry:
-		 - $ Q(s, a) \leftarrow Q(s, a) + \alpha \big[ r + \gamma \max_{a'} Q(s', a') - Q(s, a) \big] $
+		 - $Q(s, a) \leftarrow Q(s, a) + \alpha \big[ r + \gamma \max_{a'} Q(s', a') - Q(s, a) \big]$
 	 - $s \gets s'$
  4. return the optimal policy found  
 
