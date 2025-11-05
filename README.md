@@ -15,7 +15,7 @@ In reinforcement learning, instead, there are no predefined correct answers or e
 
 ### Markov decision process
 A Markov Decision Process (MDP) is a mathematical framework used to formally describe the environment in reinforcement learning.
-It provides a structured way to represent how actions affect the state of the system and what rewards the agent can expect.
+It provides a structured way to represents how actions affect the state of the system and what rewards the agent can expect.
 
 M = (S, A, δ, r)
  - S: finite set of states
@@ -26,7 +26,7 @@ M = (S, A, δ, r)
 The Markov property says that the next state depends only on the current state and action, not on the sequence of previous states.
 
 #### Value function
-The value function represent how good it's for the agent to be in a given state following a certain policy π. Formally is the expected cumulative reward of an agent starting from the state s following a policy π
+The value function represents how good it's for the agent to be in a given state following a certain policy π. Formally is the expected cumulative reward of an agent starting from the state s following a policy π
 
 $V^{\pi}(s)\equiv E[r_{1} + \gamma r_{2} + \gamma^2r_3 + ...] = E[\sum_{t=1}^{\infty}\gamma^{t-1}r_t]$
 
@@ -35,7 +35,7 @@ $V^{\pi}(s)\equiv E[r_{1} + \gamma r_{2} + \gamma^2r_3 + ...] = E[\sum_{t=1}^{\i
 - γ: discount factor, which increases the importance of immediate rewards, instead of future
 
 #### Q-function
-The Q-function value consider both states and actions. It represents the expected cumulative reward staring from state s, taking action a, following policy π. Basically measures how good it's to perform an action a in a state s.
+The Q-function value consider both states and actions. It represents the expected cumulative reward starting from state s, taking action a, following policy π. Basically measures how good it's to perform an action a in a state s.
 
 $Q^{\pi}(s, a)\equiv r(s, a) + \gamma V^\pi(\delta(s, a))$
 
@@ -44,22 +44,22 @@ Q-learning is one of the most popular model-free reinforcement learning algorith
 It allows an agent to learn an optimal policy by directly estimating the value of each state–action pair, without requiring any knowledge of the environment’s transition probabilities. The goal of Q-learning is to learn the optimal Q-function Q*(s, a).
 There are 2 different approaches:
 ##### Tabular Q-learning
-In this approach, the Q-values are stored in a Q-table. The table is updated iteratively using the Bellman equation, allowing the agent to learn the optimal policy by directly updating each state–action pair.
+In this approach, the Q-values are stored in a Q-table. The table is updated iteratively using the Bellman optimality equation, which gradually improves the estimation of each state–action pair.
 Steps:
  1. Initialize each table entry to 0
  2. observe current state s
  3. for t = 1, ..., T 
 	 - choose an action *a* by a certain strategy
 	 - execute *a*
-	 - observe the new state *s'* after the execution
-	 - collect immediate reward *r*
+	 - observe the new state *s'* and reward *r* after the execution
 	 - update the table entry:
-		 - $Q[s, a] \gets r + \gamma \max_{a'\in A}Q[s', a']$
+		 - $ Q(s, a) \leftarrow Q(s, a) + \alpha \big[ r + \gamma \max_{a'} Q(s', a') - Q(s, a) \big] $
 	 - $s \gets s'$
  4. return the optimal policy found  
 
 ##### Deep Q-Network (DQN)
-When the state or action space becomes large or continuous, storing all Q-values in a table is not feasible. In this case, instead of a Q-Table, we have a neural network that is used to approximate the Q-function. 
+When the state or action space becomes large or continuous, storing all Q-values in a table is not feasible. In this case, a neural network is used to approximate the Q-function $Q(s,a;\theta)$.
+This network is trained to minimize the difference between the predicted Q-values and the target values computed using the same Bellman update.
 
 ### Project Goal
 The goal of this project is to implement a Reinforcement Learning agent based on the Q-learning algorithm based on the 2 approaches. After the implementation, we can experiment with different parameters (such as learning rate, discount factor, exploration rate, and network architecture) to observe how they influence the learning behavior and convergence of the algorithms. Finally, both approaches are compared using common performance metrics, in order to highlight the strengths and weaknesses of each method.
@@ -79,7 +79,7 @@ Each environment in Gymnasium follows the same basic loop:
 	 - A done flag (if the episodes is terminated)
 4. The agent uses this feedback to update its policy
 
-![](https://gymnasium.farama.org/_images/AE_loop_dark.png)
+![](https://gymnasium.farama.org/_images/AE_loop.png)
 
 ### Cliff Walking Environment
 For this project, I choose Cliff Walking environment: a simple grid world with 4 rows and 12 columns. 
@@ -95,6 +95,8 @@ The goal for the agent is to reach the bottom-right corner from the bottom-left 
 	- -1 for each step: this allow the algorithm to reach the goal in the fewest possible moves
 	- -100 if the agent falls into the cliff: this don't terminate the episode, the agent respawns in the starting point
 
+![](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/CliffWalkingEnv.png)
+
 ## Implementation
 ### Tabular Q-learning
 
@@ -108,7 +110,10 @@ During execution, there is a flag named `is_training` that determines how the pr
 
 	After executing the action and observing the new state and reward, the corresponding (state, action) in the Q-table is updated according to the following formula:
 	
-		q_table[state, action] =  q_table[state, action] +  learning_rate  * ( reward  +  discount_factor  * np.max(q_table[new_state, :]) -  q_table[state,action])
+	```python 
+	q_table[state, action] = q_table[state, action] + learning_rate * ( reward + discount_factor *
+	np.max(q_table[new_state, :]) - q_table[state,action])
+	```
 
 	During the training, several variables are recorded to compute performance metrics after the training. At the end, metrics and the Q-table are saved in a timestamped folder. Q-table is managed by the numPy library and is stored as a *.pkl*. 
 
@@ -119,6 +124,10 @@ As before, several global parameters were defined at the beginning of the progra
 A dedicated DQN class is implemented to define and manage the **neural network**. The network consists of 2 fully connected layers, each with a tunable number of nodes. The Adam optimizer is used to update the network parameters.
 
 To store and reuse the agent's past experiences, I implemented a **Replay Buffer** based on a deque, which offers efficient insertion and sampling operations. During training, random batches are sampled from the buffer to update the network. This technique allows the agent to breaks temporal correlation and increases sample efficiency by reusing multiple times experiences.
+
+The neural network's weights are updated through an optimization process guided by the Bellman Equation. The goal is to **minimize** the **Loss Function** between:
+- **Target value**: the "correct" reward for the next state, calculated over the replay buffer values as: $$Y_t = R_t + \gamma \max_{a'} Q(S_{t+1}, a')$$
+- **Predicted value**: the Q-value predicted by the current network
 
 As before, the **epsilon-greedy** strategy is used to balance exploration and exploitation. During the execution, several metrics are collected to evaluate and compare the final performance of the agent, under different settings.
 
@@ -211,9 +220,9 @@ Then to improve the performance, I tried different runs by increasing the number
  - Ep: 500000, LR: 0.1, Reward: -70
  - Ep: 500000, LR: 0.001, Reward: -63
 
-![2000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\2000.png)
-![25000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\25000.png)
-![500000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media\Q_table\Non_det\500000.png)
+![2000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/2000.png)
+![25000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/25000.png)
+![500000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/Q_table/Non_det/500000.png)
 #### Deep Q-Network (DQN)
 ##### Some important considerations
 At the beginning of this type of tests I noticed something strange in the results. Then I tried to reason deeply about the parameters, and which of them could be modified to further improve the results. I did one important observation on how I defined the success rate in my setup. It must be interpreted carefully, because when the agent falls into a cliff, the episode doesn't count as a failure, but the agent respawns at the initial position. An episode is considered unsuccessful, only if the agent fails to reach the goal using less steps than the max step value.
@@ -227,13 +236,13 @@ When trained for 750 episodes, the agent achived an average reward of about -300
 ![750 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/750.png)
 ![1000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/1000.png)
 ###### Tuning learning rate
-With 2000 episodes, the average reward increased to -71. However, by reducing the learning rate to 0.0005, the performance decreases, suggesting that this value requires an higher number of episodes to converge to the optimal value. Infact, by extending the training to 4000 episodes, the agent reaches an averagre reward to -71.
+With 2000 episodes, the average reward increased to -71. However, by reducing the learning rate to 0.0005, the performance decreases, suggesting that this value requires an higher number of episodes to converge to the optimal value. Infact, by extending the training to 4000 episodes, the agent reaches an averagre reward to -67.
 ![2000 episodes](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/2000.png)
 ![2250](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/2250_0,0005.png)
 ![4000](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/4000_0,0005.png)
 
 ###### Tuning memory
-Additional experiments were ran by adjusting batch and memory size. With 750 episodes, a batch size of 256 and a memory size of 4096, the agent reached a 100% success and an average reward of -75
+Additional experiments were ran by adjusting batch and memory size. With 750 episodes, a batch size of 256 and a memory size of 4096, the agent reached a 100% success and an average reward of -79
 ![750 improved](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/750_improved.png)
 ###### Tuning Neural Network nodes
 Increasing the number of hidden units in the network from 32 to 64 did not lead to noticeable improvements.
@@ -251,3 +260,6 @@ From these experiments, it became clear that:
 
 Finally, with 2500 episodes, 256 batch size, 8192 memory size, 0.001 learning rate, 300 max episode steps and 0.99 discount factor, the agent reaches its best average reward: -63 
 ![Final run](https://raw.githubusercontent.com/Matteoleme/ML-project-24-25/refs/heads/main/media/DQN/Non_det/last_2500.png)
+
+
+*Note*: Some average rewards may appear inconsistent between the text and the plots. This is not an error. The values reported in the text should be considered as the reference, since in the plots there is always a small probability of taking a non-optimal (random) action, while in the tests described in the report the agent always selects the best possible action without any exploration probability.
